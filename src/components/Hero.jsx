@@ -11,7 +11,7 @@ const Hero = () => {
   }, [])
 
   return (
-    <section className="bg-gradient-to-br from-blue-50 via-white to-blue-50 py-16 md:py-24 px-4 md:px-8 overflow-hidden">
+    <section className="bg-gradient-to-b from-gray-50 to-white py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
         {/* Texto principal */}
         <div
@@ -38,7 +38,7 @@ const Hero = () => {
 
           <div className="flex justify-center md:justify-start">
             <a
-              href="/precios"
+              href="/pricing"
               className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3.5 rounded-xl text-lg font-medium transition-all duration-300 shadow-md"
             >
               Ver planes y precios

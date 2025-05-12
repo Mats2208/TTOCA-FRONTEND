@@ -10,8 +10,8 @@ const Header = () => {
   const navLinks = [
     { name: "Inicio", href: "/" },
     { name: "Servicios", href: "/servicios" },
-    { name: "Precios", href: "/precios" },
-    { name: "Contacto", href: "/contacto" },
+    { name: "Precios", href: "/pricing" },
+    { name: "Profile", href: "/Profile" },
   ]
 
   // Detectar scroll para cambiar el estilo del header

@@ -97,7 +97,7 @@ const Beneficios = () => {
   }, [isMobile, currentSlide])
 
   return (
-    <section className="py-20 px-4 md:px-8 bg-gradient-to-b from-white to-blue-50">
+    <section className="section-bg py-10 px-4 md:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Encabezado */}
         <div className="text-center mb-16">

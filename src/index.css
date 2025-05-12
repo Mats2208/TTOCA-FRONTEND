@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .section-bg {
+    @apply bg-gradient-to-b from-white via-blue-50 to-white;
+  }
+}
