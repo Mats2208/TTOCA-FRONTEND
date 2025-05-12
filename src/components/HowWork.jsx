@@ -8,7 +8,7 @@ const pasos = [
     icon: <UserPlus className="w-6 h-6 text-white" />,
     titulo: "Regístrate",
     descripcion: "Crea una cuenta gratis y accede al panel administrativo desde cualquier navegador.",
-    imagen: "/src/assets/Hero-Image.png?height=240&width=320",
+    imagen: "/src/assets/HWSTEP1.png?height=240&width=320",
     color: "from-blue-500 to-blue-600",
   },
   {
