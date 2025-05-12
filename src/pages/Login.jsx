@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Mail, Lock, Eye, EyeOff, CheckCircle } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -20,22 +22,43 @@ const Login = () => {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+  e.preventDefault()
+  setLoading(true)
+  setError("")
+  setSuccess(false)
 
-    try {
-      // Simulación de login exitoso después de 1.5 segundos
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      //Implementar la logica aqui
+  try {
+    // Simular espera de llamada al backend
+    await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      setSuccess(true)
-    } catch (err) {
-      setError(err.message || "Credenciales inválidas. Por favor, inténtalo de nuevo.")
-    } finally {
-      setLoading(false)
+    // Validación de usuario simulado
+    const { correo, contrasena } = formData
+    const usuarioValido = correo === "test@gmail.com" && contrasena === "123456"
+
+    if (!usuarioValido) {
+      throw new Error("Credenciales inválidas")
     }
+
+    // Guardar sesión en localStorage
+    localStorage.setItem("ttoca_session", JSON.stringify({
+      correo,
+      fecha: new Date().toISOString()
+    }))
+
+    // Éxito visual
+    setSuccess(true)
+
+    // Redirigir al dashboard luego de 2 segundos
+    setTimeout(() => {
+      navigate("/dashboard")
+    }, 2000)
+
+  } catch (err) {
+    setError(err.message || "Error al iniciar sesión. Inténtalo de nuevo.")
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <section className="py-16 px-4 md:py-24 bg-gradient-to-b from-blue-50 to-white min-h-screen flex items-center">
