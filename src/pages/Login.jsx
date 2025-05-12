@@ -50,7 +50,7 @@ const Login = () => {
 
     // Redirigir al dashboard luego de 2 segundos
     setTimeout(() => {
-      navigate("/dashboard")
+      navigate("/Home")
     }, 2000)
 
   } catch (err) {
