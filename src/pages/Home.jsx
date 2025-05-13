@@ -17,7 +17,7 @@ export default function Dashboard() {
       const key = "ttoca_proyectos_" + session.correo
       const datos = JSON.parse(localStorage.getItem(key)) || []
       setProyectos(datos)
-      setTimeout(() => setLoading(false), 500) // Pequeño delay para mejor UX
+      setTimeout(() => setLoading(false), 500)
     }
   }, [navigate])
 
@@ -104,6 +104,7 @@ export default function Dashboard() {
 
 function ProjectCard({ proyecto, onClick }) {
   // Generamos algunos stats aleatorios para demo
+  //Cambiar luego con los datos reales
   const stats = [
     {icon: <Users size={14} className="text-blue-500" />, value: Math.floor(Math.random() * 50) + 10 },
     {icon: <Calendar size={14} className="text-green-500" />, value: Math.floor(Math.random() * 20) + 5 },

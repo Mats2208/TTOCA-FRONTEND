@@ -29,7 +29,7 @@ const Login = () => {
 
   try {
     // Simular espera de llamada al backend
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // Validación de usuario simulado
     const { correo, contrasena } = formData
