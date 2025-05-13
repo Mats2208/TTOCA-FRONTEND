@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle } from "lucide-react"
-import { useNavigate } from "react-router-dom"
 
 const Registro = () => {
   const [formData, setFormData] = useState({

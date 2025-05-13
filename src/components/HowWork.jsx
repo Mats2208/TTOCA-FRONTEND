@@ -15,7 +15,7 @@ const pasos = [
     icon: <ClipboardList className="w-6 h-6 text-white" />,
     titulo: "Crea tu sistema de turnos",
     descripcion: "Define tus preferencias, categorías y mensaje de bienvenida. Todo en segundos.",
-    imagen: "/src/assets/Hero-Image.png?height=240&width=320",
+    imagen: "/src/assets/HWSTEP2.PNG?height=240&width=320",
     color: "from-blue-600 to-blue-700",
   },
   {
@@ -29,7 +29,7 @@ const pasos = [
     icon: <Eye className="w-6 h-6 text-white" />,
     titulo: "Gestiona turnos",
     descripcion: "Ve quién está en espera, llama al siguiente y controla todo en tiempo real.",
-    imagen: "/src/assets/Hero-Image.png?height=240&width=320",
+    imagen: "/src/assets/HWSTEP4.png?height=240&width=320",
     color: "from-blue-800 to-blue-900",
   },
 ];
