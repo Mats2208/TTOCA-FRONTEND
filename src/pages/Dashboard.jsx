@@ -6,6 +6,7 @@ import EmpresaHeader from "../components/EmpresaHeader"
 import ColaPanel from "../components/panels/ColaPanel"
 import EstadisticasPanel from "../components/panels/EstadisticasPanel"
 import ConfiguracionPanel from "../components/panels/ConfiguracionPanel"
+import SettingsQueue from "../components/panels/SettingQueue"
 
 const Dashboard = () => {
   const { id } = useParams()
@@ -40,6 +41,8 @@ const Dashboard = () => {
         return <ColaPanel proyecto={proyecto} />
       case "estadisticas":
         return <EstadisticasPanel proyecto={proyecto} />
+      case "Administrar_Cola":
+        return <SettingsQueue proyecto={proyecto} />
       case "configuracion":
         return <ConfiguracionPanel proyecto={proyecto} setProyecto={setProyecto} />
       default:
@@ -57,5 +60,4 @@ const Dashboard = () => {
     </div>
   )
 }
-
 export default Dashboard

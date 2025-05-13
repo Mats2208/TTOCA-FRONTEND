@@ -1,3 +1,4 @@
+// src/components/panels/ColaPanel.jsx
 "use client"
 
 import { useState } from "react"
@@ -5,21 +6,32 @@ import { Play, Pause, Users, Clock, RefreshCw, QrCode } from "lucide-react"
 
 export default function ColaPanel({ proyecto }) {
   const [colaActiva, setColaActiva] = useState(false)
-  const [clientesEnEspera, setClientesEnEspera] = useState(0)
+  const [clientes, setClientes] = useState([])
+  const [nombreCliente, setNombreCliente] = useState("")
 
   const toggleCola = () => {
     setColaActiva(!colaActiva)
-    // Si activamos la cola, simulamos algunos clientes
     if (!colaActiva) {
-      setClientesEnEspera(Math.floor(Math.random() * 5))
+      // Al activar la cola, se reinicia con algunos clientes falsos
+      setClientes([
+        { id: crypto.randomUUID(), nombre: "Juan Pérez" },
+        { id: crypto.randomUUID(), nombre: "María López" }
+      ])
     } else {
-      setClientesEnEspera(0)
+      setClientes([])
+    }
+  }
+
+  const agregarCliente = () => {
+    if (nombreCliente.trim()) {
+      setClientes([...clientes, { id: crypto.randomUUID(), nombre: nombreCliente }])
+      setNombreCliente("")
     }
   }
 
   const llamarSiguiente = () => {
-    if (clientesEnEspera > 0) {
-      setClientesEnEspera(clientesEnEspera - 1)
+    if (clientes.length > 0) {
+      setClientes(clientes.slice(1))
     }
   }
 
@@ -50,7 +62,7 @@ export default function ColaPanel({ proyecto }) {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Clientes en espera</p>
-                <p className="text-lg font-semibold text-gray-800">{clientesEnEspera}</p>
+                <p className="text-lg font-semibold text-gray-800">{clientes.length}</p>
               </div>
             </div>
           </div>
@@ -63,14 +75,33 @@ export default function ColaPanel({ proyecto }) {
               <div>
                 <p className="text-sm text-gray-500">Tiempo estimado</p>
                 <p className="text-lg font-semibold text-gray-800">
-                  {clientesEnEspera > 0 ? `${clientesEnEspera * 5} min` : "0 min"}
+                  {clientes.length > 0 ? `${clientes.length * 5} min` : "0 min"}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Formulario para agregar clientes manualmente */}
+        {colaActiva && (
+          <div className="flex gap-3 mb-6">
+            <input
+              type="text"
+              value={nombreCliente}
+              onChange={(e) => setNombreCliente(e.target.value)}
+              placeholder="Nombre del cliente"
+              className="flex-1 border border-gray-300 rounded-md p-2"
+            />
+            <button
+              onClick={agregarCliente}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Agregar
+            </button>
+          </div>
+        )}
+
+        {/* Acciones */}
         <div className="flex flex-col sm:flex-row gap-4">
           <button
             onClick={toggleCola}
@@ -99,11 +130,11 @@ export default function ColaPanel({ proyecto }) {
           {colaActiva && (
             <button
               onClick={llamarSiguiente}
-              disabled={clientesEnEspera === 0}
+              disabled={clientes.length === 0}
               className={`
                 flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium
                 ${
-                  clientesEnEspera === 0
+                  clientes.length === 0
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-green-600 text-white hover:bg-green-700"
                 }
@@ -128,6 +159,24 @@ export default function ColaPanel({ proyecto }) {
             <button className="text-xs bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 py-1.5 px-3 rounded-md transition-colors">
               Generar código QR
             </button>
+          </div>
+        )}
+
+        {/* Visualización de la cola */}
+        {colaActiva && clientes.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Clientes en la cola</h3>
+            <ul className="divide-y divide-gray-200">
+              {clientes.map((cliente, index) => (
+                <li key={cliente.id} className="py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users size={16} className="text-blue-500" />
+                    <span className="font-medium text-gray-800">{cliente.nombre}</span>
+                  </div>
+                  <span className="text-sm text-gray-500">#{index + 1}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

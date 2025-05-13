@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Building2, LayoutDashboard, BarChart3, Settings, Menu, X, LogOut } from "lucide-react"
+import { Building2, LayoutDashboard, BarChart3, Settings, Settings2, Menu, X, LogOut } from "lucide-react"
 
 export default function Sidebar({ proyecto, setVista, vistaActiva }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -47,6 +47,7 @@ export default function Sidebar({ proyecto, setVista, vistaActiva }) {
     { id: "cola", icon: <LayoutDashboard size={20} />, label: "Cola" },
     { id: "estadisticas", icon: <BarChart3 size={20} />, label: "Estadísticas" },
     { id: "configuracion", icon: <Settings size={20} />, label: "Configuración" },
+    { id: "Administrar_Cola", icon: <Settings2 size={20} />, label: "Administracion de Cola" },
   ]
 
   const handleNavClick = (id) => {
