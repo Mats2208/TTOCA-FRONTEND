@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 const Registro = () => {
   const [formData, setFormData] = useState({
@@ -24,17 +25,29 @@ const Registro = () => {
     e.preventDefault()
     setLoading(true)
     setError("")
+    setSuccess(false)
 
-    try {
-      // Simulación de registro exitoso después de 1.5 segundos
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      //Implementar la logica aqui
+    setTimeout(() => {
+      window.location.href = "/login"
+    }, 500)
 
-      setSuccess(true)
+    try{
+      const { usuario, correo, contrasena } = formData
+
+      const res = await fetch("http://127.0.0.1:5000/api/auth/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({usuario, correo, contrasena})
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al registrar. Inténtalo de nuevo.")
+      }
+
     } catch (err) {
-      setError(err.message || "Ha ocurrido un error durante el registro. Inténtalo de nuevo.")
-    } finally {
-      setLoading(false)
+      setError(err.message || "Error al registrar. Inténtalo de nuevo.")
     }
   }
 
