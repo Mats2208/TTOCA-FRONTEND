@@ -8,7 +8,7 @@ import Footer from "../components/Footer";
 
 export default function LandingPage() {
     return (
-      <div>
+      <div className="overflow-x-hidden">
         <div className="mb-6 m">
         <Header />
         </div>
