@@ -14,7 +14,7 @@ const NotFoundPage = () => {
         {/* Image container */}
         <div className="relative w-full max-w-md mx-auto mb-8">
           <img 
-            src="../src/assets/404.png" 
+            src="../assets/404.png" 
             alt="404 Error Illustration" 
             className="w-full h-auto object-contain rounded-xl shadow-lg"
           />

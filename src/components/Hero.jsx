@@ -54,7 +54,7 @@ const Hero = () => {
         >
           <div className="relative z-10 bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
             <img
-              src="../src/assets/hero-image.png"
+              src="../assets/hero-image.png"
               alt="TToca - Sistema de gestión de turnos"
               className="w-full h-auto object-cover"
             />

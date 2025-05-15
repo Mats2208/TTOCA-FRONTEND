@@ -51,7 +51,7 @@ const Header = () => {
         <a href="/" className="flex items-center space-x-3 group">
           <div className="relative h-10 w-11 overflow-hidden">
             <img
-              src="/src/assets/TToca_Logo.png"
+              src="../assets/TToca_Logo.png"
               alt="Logo TToca"
               className="h-10 w-11 object-contain transition-transform duration-300 group-hover:scale-105"
             />
