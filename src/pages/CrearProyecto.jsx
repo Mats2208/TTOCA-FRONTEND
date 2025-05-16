@@ -26,21 +26,29 @@ const CrearProyecto = () => {
     const session = JSON.parse(localStorage.getItem("ttoca_session"))
     if (!session) return navigate("/login")
 
-    const key = "ttoca_proyectos_" + session.correo
-    const proyectos = JSON.parse(localStorage.getItem(key)) || []
-
     const nuevo = {
-      id: Date.now().toString(),
       nombre,
       titular,
       logo,
-      horario,
-      createdAt: new Date().toISOString(),
+      config: { horario }
     }
 
-    proyectos.push(nuevo)
-    localStorage.setItem(key, JSON.stringify(proyectos))
-    navigate("/home")
+    fetch(`http://localhost:5000/api/usuarios/${session.correo}/proyectos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(nuevo)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("No se pudo crear el proyecto")
+      return res.json()
+    })
+    .then(() => navigate("/home"))
+    .catch(err => {
+      console.error("Error al crear proyecto:", err)
+      alert("Hubo un problema al guardar la empresa.")
+    })
   }
 
   return (

@@ -14,10 +14,20 @@ export default function Dashboard() {
     if (!session) {
       navigate("/login")
     } else {
-      const key = "ttoca_proyectos_" + session.correo
-      const datos = JSON.parse(localStorage.getItem(key)) || []
-      setProyectos(datos)
-      setTimeout(() => setLoading(false), 500)
+    fetch(`http://localhost:5000/api/usuarios/${session.correo}/proyectos`)
+      .then(res => {
+        if (!res.ok) throw new Error("No se pudo obtener las empresas")
+        return res.json()
+      })
+      .then(data => {
+        setProyectos(data.empresas || [])
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error("Error al cargar proyectos:", err)
+        setProyectos([])
+        setLoading(false)
+      })
     }
   }, [navigate])
 

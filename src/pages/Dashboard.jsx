@@ -20,19 +20,26 @@ const Dashboard = () => {
       return navigate("/login")
     }
 
-    const key = `ttoca_proyectos_${session.correo}`
-    const proyectos = JSON.parse(localStorage.getItem(key)) || []
-    const proyectoEncontrado = proyectos.find(p => p.id === id)
-
-    if (!proyectoEncontrado) {
-      return navigate("/home")
-    }
-
-    setProyecto(proyectoEncontrado)
+    fetch(`http://localhost:5000/api/usuarios/${session.correo}/proyectos/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Proyecto no encontrado")
+        return res.json()
+      })
+      .then((data) => {
+        setProyecto(data.empresa)
+      })
+      .catch((err) => {
+        console.error("Error al cargar el proyecto:", err)
+        navigate("/home")
+      })
   }, [id, navigate])
 
   if (!proyecto) {
-    return <div className="p-10">Cargando proyecto...</div>
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-600 text-lg">
+        Cargando proyecto...
+      </div>
+    )
   }
 
   const renderVista = () => {
@@ -60,4 +67,5 @@ const Dashboard = () => {
     </div>
   )
 }
+
 export default Dashboard
