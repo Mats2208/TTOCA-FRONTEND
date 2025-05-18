@@ -113,14 +113,6 @@ export default function Dashboard() {
 }
 
 function ProjectCard({ proyecto, onClick }) {
-  // Generamos algunos stats aleatorios para demo
-  //Cambiar luego con los datos reales
-  const stats = [
-    {icon: <Users size={14} className="text-blue-500" />, value: Math.floor(Math.random() * 50) + 10 },
-    {icon: <Calendar size={14} className="text-green-500" />, value: Math.floor(Math.random() * 20) + 5 },
-    {icon: <Clock size={14} className="text-amber-500" />, value: Math.floor(Math.random() * 15) + "min" }
-  ];
-  
   return (
     <div
       className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer border border-gray-200 hover:border-blue-200 transform hover:-translate-y-1"
@@ -147,15 +139,6 @@ function ProjectCard({ proyecto, onClick }) {
               {proyecto.nombre}
             </h2>
             <p className="text-sm text-gray-500 mt-1 line-clamp-2">{proyecto.titular || "Gestión de colas empresariales"}</p>
-            
-            <div className="flex items-center gap-4 mt-3">
-              {stats.map((stat, index) => (
-                <div key={index} className="flex items-center gap-1.5 text-xs font-medium bg-gray-50 px-2 py-0.5 rounded-md">
-                  {stat.icon}
-                  <span>{stat.value}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
