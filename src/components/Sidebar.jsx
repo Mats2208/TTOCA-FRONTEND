@@ -10,11 +10,9 @@ export default function Sidebar({ proyecto, setVista, vistaActiva }) {
     const handleLogout = () => {
     // Limpiar sesión actual y datos de empresas
     localStorage.removeItem("ttoca_session")
-    // Si usás un backend, aquí deberías invalidar el token en el servidor
     window.location.href = "/login"
     }
 
-  // Check if we're on mobile
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 1024)

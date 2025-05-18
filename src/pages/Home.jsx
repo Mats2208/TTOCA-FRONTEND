@@ -14,7 +14,7 @@ export default function Dashboard() {
     if (!session) {
       navigate("/login")
     } else {
-    fetch(`http://127.0.0.1:5000/api/usuarios/${session.correo}/proyectos`)
+    fetch(`http://localhost:5000/api/usuarios/${session.correo}/proyectos`)
       .then(res => {
         if (!res.ok) throw new Error("No se pudo obtener las empresas")
         return res.json()

@@ -3,13 +3,14 @@ import { Save, Building2, Clock, MapPin, Phone, Mail } from 'lucide-react'
 
 export default function ConfiguracionPanel({ proyecto, setProyecto }) {
   const [isSaving, setIsSaving] = useState(false)
+  const [showSaved, setShowSaved] = useState(false)
   const [formData, setFormData] = useState({
     nombre: proyecto.nombre || "",
     titular: proyecto.titular || "",
     direccion: proyecto.direccion || "",
     telefono: proyecto.telefono || "",
     email: proyecto.email || "",
-    horario: proyecto.horario || ""
+    horario: proyecto.config.horario || ""
   })
 
   const handleInputChange = (e) => {
@@ -17,22 +18,45 @@ export default function ConfiguracionPanel({ proyecto, setProyecto }) {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSaving(true)
-    
-    // Simulate API call
-    setTimeout(() => {
-      const key = `ttoca_proyectos_${JSON.parse(localStorage.getItem("ttoca_session")).correo}`
-      const proyectos = JSON.parse(localStorage.getItem(key)) || []
-      const actualizados = proyectos.map(p => 
-        p.id === proyecto.id ? { ...p, ...formData } : p
-      )
-      
-      localStorage.setItem(key, JSON.stringify(actualizados))
-      setProyecto(prev => ({ ...prev, ...formData }))
+
+    if (!formData.nombre || !formData.titular || !formData.email.includes("@")) {
+      alert("Por favor, completa todos los campos obligatorios correctamente.")
       setIsSaving(false)
-    }, 600)
+      return
+    }
+
+    const session = JSON.parse(localStorage.getItem("ttoca_session"))
+    const correo = session.correo
+    const proyectoId = proyecto.id
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/usuarios/${correo}/proyectos/${proyectoId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) throw new Error("Error al guardar en backend")
+
+      const actualizado = await response.json()
+
+
+      const key = `ttoca_proyectos_${correo}`
+      const proyectos = JSON.parse(localStorage.getItem(key)) || []
+      const actualizados = proyectos.map(p => p.id === proyectoId ? actualizado.empresa : p)
+      localStorage.setItem(key, JSON.stringify(actualizados))
+      setProyecto(actualizado.empresa)
+      setIsSaving(false)
+      setShowSaved(true)
+      setTimeout(() => setShowSaved(false), 2500)
+    } catch (err) {
+      console.error(err)
+      alert("Hubo un error al guardar los cambios.")
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -186,6 +210,17 @@ export default function ConfiguracionPanel({ proyecto, setProyecto }) {
             )}
           </button>
         </div>
+        <br />
+        {showSaved && (
+          <div className="mb-6">
+            <div className="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Cambios guardados correctamente.
+            </div>
+          </div>
+        )}
       </form>
     </div>
   )

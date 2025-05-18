@@ -1,4 +1,4 @@
-import { Building2 } from 'lucide-react'
+import { Building2, MapPin, Clock, Phone, Mail } from 'lucide-react'
 
 export default function EmpresaHeader({ proyecto }) {
   return (
@@ -17,6 +17,7 @@ export default function EmpresaHeader({ proyecto }) {
             </div>
           )}
         </div>
+
         <div className="flex-1 min-w-0">
           <h1 className="text-xl md:text-2xl font-bold text-gray-800 truncate">{proyecto.nombre}</h1>
           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1">
@@ -30,6 +31,33 @@ export default function EmpresaHeader({ proyecto }) {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5 text-sm text-gray-600">
+        {proyecto.direccion && (
+          <div className="flex items-center gap-2">
+            <MapPin size={16} className="text-blue-500" />
+            <span className="truncate">{proyecto.direccion}</span>
+          </div>
+        )}
+        {proyecto.config?.horario && (
+          <div className="flex items-center gap-2">
+            <Clock size={16} className="text-blue-500" />
+            <span>{proyecto.config.horario}</span>
+          </div>
+        )}
+        {proyecto.telefono && (
+          <div className="flex items-center gap-2">
+            <Phone size={16} className="text-blue-500" />
+            <span>{proyecto.telefono}</span>
+          </div>
+        )}
+        {proyecto.email && (
+          <div className="flex items-center gap-2">
+            <Mail size={16} className="text-blue-500" />
+            <span className="truncate">{proyecto.email}</span>
+          </div>
+        )}
       </div>
     </div>
   )
