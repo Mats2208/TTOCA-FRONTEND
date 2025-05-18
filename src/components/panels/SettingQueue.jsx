@@ -12,6 +12,7 @@ import {
   Users,
   Timer,
   Trash2,
+  X,
 } from "lucide-react"
 
 export default function SettingsQueue({ proyecto }) {
@@ -21,6 +22,8 @@ export default function SettingsQueue({ proyecto }) {
   const [prioridad, setPrioridad] = useState(false)
   const [tiempoEstimado, setTiempoEstimado] = useState(5)
   const [isFormValid, setIsFormValid] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState(null)
 
   const empresaId = proyecto.id
 
@@ -67,7 +70,30 @@ export default function SettingsQueue({ proyecto }) {
     const actualizadas = categorias.filter((cat) => cat.id !== id)
     setCategorias(actualizadas)
     guardarCategorias(actualizadas)
+
+    // 🔥 Solicita eliminar también en el backend
+    fetch(`http://localhost:5000/api/proyectos/${empresaId}/cola/${id}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (!res.ok) console.warn("No se pudo eliminar la cola backend")
+      })
+      .catch((err) => console.error("Error al eliminar cola:", err))
   }
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") {
+        setDeleteConfirmOpen(false)
+      }
+    }
+    window.addEventListener("keydown", handleEsc)
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc)
+    }
+  }, [])
 
   return (
     <div className="bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden">
@@ -248,7 +274,10 @@ export default function SettingsQueue({ proyecto }) {
                 >
                   <div className="absolute top-3 right-3">
                     <button
-                      onClick={() => eliminarCategoria(cat.id)}
+                      onClick={() => {
+                        setCategoryToDelete(cat)
+                        setDeleteConfirmOpen(true)
+                      }}
                       className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50"
                     >
                       <Trash2 size={16} />
@@ -295,6 +324,101 @@ export default function SettingsQueue({ proyecto }) {
           )}
         </div>
       </div>
+
+      {/* Custom Delete Confirmation Modal */}
+      {deleteConfirmOpen && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-gray-600 bg-opacity-50 backdrop-blur-sm"
+          aria-labelledby="modal-title"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setDeleteConfirmOpen(false)}
+        >
+          <div className="flex items-center justify-center min-h-screen p-4">
+            {/* Modal panel */}
+            <div
+              className="bg-white rounded-xl shadow-xl transform transition-all max-w-lg w-full p-6 animate-modal-in"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900" id="modal-title">
+                    Eliminar categoría
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setDeleteConfirmOpen(false)}
+                  className="text-gray-400 hover:text-gray-500 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="mt-3 mb-6">
+                <p className="text-gray-700 mb-3">
+                  ¿Estás seguro que deseas eliminar la categoría{" "}
+                  <span className="font-semibold text-gray-900">{categoryToDelete?.nombre}</span>?
+                </p>
+                <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-start gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800">Atención</p>
+                    <p className="text-sm text-red-700 mt-0.5">
+                      Todos los turnos activos en esta cola también serán eliminados. Esta acción no se puede deshacer.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button
+                  type="button"
+                  className="inline-flex justify-center items-center px-4 py-2.5 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-colors"
+                  onClick={() => {
+                    setDeleteConfirmOpen(false)
+                    setCategoryToDelete(null)
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex justify-center items-center gap-2 px-4 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                  onClick={() => {
+                    if (categoryToDelete) {
+                      eliminarCategoria(categoryToDelete.id)
+                    }
+                    setDeleteConfirmOpen(false)
+                    setCategoryToDelete(null)
+                  }}
+                >
+                  <Trash2 size={16} />
+                  Eliminar categoría
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .animate-modal-in {
+          animation: modalIn 0.2s ease-out forwards;
+        }
+      `}</style>
     </div>
   )
 }
