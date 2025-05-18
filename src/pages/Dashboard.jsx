@@ -20,7 +20,7 @@ const Dashboard = () => {
       return navigate("/login")
     }
 
-    fetch(`http://localhost:5000/api/usuarios/${session.correo}/proyectos/${id}`)
+    fetch(`http://127.0.0.1:5000/api/usuarios/${encodeURIComponent(session.correo)}/proyectos/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Proyecto no encontrado")
         return res.json()
