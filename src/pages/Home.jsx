@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Building2, Plus, ArrowRight, Calendar, Users, BarChart3, Clock } from "lucide-react"
+const API_URL = import.meta.env.VITE_URL
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -14,7 +15,7 @@ export default function Dashboard() {
     if (!session) {
       navigate("/login")
     } else {
-    fetch(`http://localhost:5000/api/usuarios/${session.correo}/proyectos`)
+    fetch(`${API_URL}/api/usuarios/${session.correo}/proyectos`)
       .then(res => {
         if (!res.ok) throw new Error("No se pudo obtener las empresas")
         return res.json()

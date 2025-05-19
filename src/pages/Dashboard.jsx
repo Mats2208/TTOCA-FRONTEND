@@ -7,6 +7,7 @@ import ColaPanel from "../components/panels/ColaPanel"
 import EstadisticasPanel from "../components/panels/EstadisticasPanel"
 import ConfiguracionPanel from "../components/panels/ConfiguracionPanel"
 import SettingsQueue from "../components/panels/SettingQueue"
+const API_URL = import.meta.env.VITE_URL
 
 const Dashboard = () => {
   const { id } = useParams()
@@ -20,7 +21,7 @@ const Dashboard = () => {
       return navigate("/login")
     }
 
-    fetch(`http://127.0.0.1:5000/api/usuarios/${encodeURIComponent(session.correo)}/proyectos/${id}`)
+    fetch(`${API_URL}/api/usuarios/${encodeURIComponent(session.correo)}/proyectos/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Proyecto no encontrado")
         return res.json()
