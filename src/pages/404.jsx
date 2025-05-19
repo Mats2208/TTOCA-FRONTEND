@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
 
+
 const NotFoundPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-sky-50 to-sky-100 text-sky-900 px-4 py-10">
@@ -14,7 +15,7 @@ const NotFoundPage = () => {
         {/* Image container */}
         <div className="relative w-full max-w-md mx-auto mb-8">
           <img 
-            src="../assets/404.png" 
+            src="/assets/404.svg" 
             alt="404 Error Illustration" 
             className="w-full h-auto object-contain rounded-xl shadow-lg"
           />

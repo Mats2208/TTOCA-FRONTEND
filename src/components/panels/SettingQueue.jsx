@@ -28,7 +28,7 @@ export default function SettingsQueue({ proyecto }) {
   const empresaId = proyecto.id
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/configuracion/${empresaId}`)
+    fetch(`https://www.ttoca.online/api/configuracion/${empresaId}`)
       .then((res) => res.json())
       .then((data) => setCategorias(data.categorias || []))
       .catch((err) => console.error("Error al cargar configuración:", err))
@@ -39,7 +39,7 @@ export default function SettingsQueue({ proyecto }) {
   }, [nombre])
 
   const guardarCategorias = (nuevas) => {
-    fetch(`http://localhost:5000/api/configuracion/${empresaId}`, {
+    fetch(`https://www.ttoca.online/api/configuracion/${empresaId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ categorias: nuevas }),
@@ -72,7 +72,7 @@ export default function SettingsQueue({ proyecto }) {
     guardarCategorias(actualizadas)
 
     // 🔥 Solicita eliminar también en el backend
-    fetch(`http://localhost:5000/api/proyectos/${empresaId}/cola/${id}`, {
+    fetch(`https://www.ttoca.online/api/proyectos/${empresaId}/cola/${id}`, {
       method: "DELETE",
     })
       .then((res) => {

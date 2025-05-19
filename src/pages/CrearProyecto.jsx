@@ -33,7 +33,7 @@ const CrearProyecto = () => {
       config: { horario }
     }
 
-    fetch(`http://127.0.0.1:5000/api/usuarios/${session.correo}/proyectos`, {
+    fetch(`https://www.ttoca.online/api/usuarios/${session.correo}/proyectos`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

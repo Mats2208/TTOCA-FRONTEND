@@ -7,7 +7,7 @@ export default function EstadisticasPanel({ proyecto }) {
   const [tendencia, setTendencia] = useState("0%")
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/colas")
+    fetch("https://www.ttoca.online/api/colas")
       .then(res => res.json())
       .then(data => {
         const cola = data?.[proyecto.id] || []

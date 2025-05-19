@@ -33,7 +33,7 @@ export default function ConfiguracionPanel({ proyecto, setProyecto }) {
     const proyectoId = proyecto.id
 
     try {
-      const response = await fetch(`http://localhost:5000/api/usuarios/${correo}/proyectos/${proyectoId}`, {
+      const response = await fetch(`https://www.ttoca.online/api/usuarios/${correo}/proyectos/${proyectoId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
