@@ -1,5 +1,6 @@
 import { BarChart3, TrendingUp, Users, Clock } from 'lucide-react'
 import { useEffect, useState } from 'react'
+const API_URL = import.meta.env.VITE_URL;
 
 export default function EstadisticasPanel({ proyecto }) {
   const [enCola, setEnCola] = useState(0)
@@ -7,7 +8,7 @@ export default function EstadisticasPanel({ proyecto }) {
   const [tendencia, setTendencia] = useState("0%")
 
   useEffect(() => {
-    fetch("https://www.ttoca.online/api/colas")
+    fetch(`${API_URL}/api/colas`)
       .then(res => res.json())
       .then(data => {
         const cola = data?.[proyecto.id] || []

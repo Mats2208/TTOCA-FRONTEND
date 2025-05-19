@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Mail, Lock, Eye, EyeOff, CheckCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+const API_URL = import.meta.env.VITE_URL;
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +31,7 @@ const handleSubmit = async (e) => {
   try {
     const { correo, contrasena } = formData
 
-    const res = await fetch("https://www.ttoca.online/api/auth/login", {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ correo, contrasena })

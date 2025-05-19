@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Building2, ChevronLeft, User, Clock, Image, Save, Check, AlertCircle, Briefcase, MapPin, Palette } from "lucide-react"
+const API_URL = import.meta.env.VITE_URL;
 
 const CrearProyecto = () => {
   const navigate = useNavigate()
@@ -33,7 +34,7 @@ const CrearProyecto = () => {
       config: { horario }
     }
 
-    fetch(`https://www.ttoca.online/api/usuarios/${session.correo}/proyectos`, {
+    fetch(`${API_URL}/api/usuarios/${session.correo}/proyectos`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

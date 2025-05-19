@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { User, Mail, Lock, Eye, EyeOff, CheckCircle } from "lucide-react"
+const API_URL = import.meta.env.VITE_URL;
 
 const Registro = () => {
   const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ const Registro = () => {
     try{
       const { usuario, correo, contrasena } = formData
 
-      const res = await fetch("https://www.ttoca.online/api/auth/register", {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({usuario, correo, contrasena})

@@ -1,5 +1,4 @@
-"use client"
-
+const API_URL = import.meta.env.VITE_URL;
 import { useState, useEffect } from "react"
 import { Play, Pause, Users, Clock, RefreshCw, ChevronRight, Plus, User } from "lucide-react"
 
@@ -29,7 +28,7 @@ export default function ColaPanel({ proyecto }) {
   }
 
   useEffect(() => {
-    fetch(`https://www.ttoca.online/api/configuracion/${empresaId}`)
+    fetch(`${API_URL}/api/configuracion/${empresaId}`)
       .then((res) => res.json())
       .then((data) => {
         const categorias = data.categorias || []
@@ -44,7 +43,7 @@ export default function ColaPanel({ proyecto }) {
   // Cargar turnos de la cola seleccionada
   useEffect(() => {
     if (colaSeleccionada && colaActiva) {
-      fetch(`https://www.ttoca.online/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
+      fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
         .then((res) => res.json())
         .then((data) => {
           setClientes(data.turnos || [])
@@ -58,7 +57,7 @@ export default function ColaPanel({ proyecto }) {
     setColaActiva(nuevoEstado)
     if (!colaSeleccionada) return
     if (nuevoEstado) {
-      fetch(`https://www.ttoca.online/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
+      fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
         .then((res) => res.json())
         .then((data) => setClientes(data.turnos || []))
     } else {
@@ -68,7 +67,7 @@ export default function ColaPanel({ proyecto }) {
 
   const agregarCliente = () => {
     if (!nombreCliente.trim() || !colaSeleccionada) return
-    fetch(`https://www.ttoca.online/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`, {
+    fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -79,7 +78,7 @@ export default function ColaPanel({ proyecto }) {
       .then((res) => res.json())
       .then(() => {
         setNombreCliente("")
-        return fetch(`https://www.ttoca.online/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
+        return fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
       })
       .then((res) => res.json())
       .then((data) => setClientes(data.turnos || []))
@@ -87,11 +86,11 @@ export default function ColaPanel({ proyecto }) {
 
   const llamarSiguiente = () => {
     if (!colaSeleccionada) return
-    fetch(`https://www.ttoca.online/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}/siguiente`, {
+    fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}/siguiente`, {
       method: "POST",
     })
       .then(() => {
-        return fetch(`https://www.ttoca.online/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
+        return fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
       })
       .then((res) => res.json())
       .then((data) => setClientes(data.turnos || []))

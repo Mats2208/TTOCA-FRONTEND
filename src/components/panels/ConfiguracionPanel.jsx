@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Save, Building2, Clock, MapPin, Phone, Mail } from 'lucide-react'
+const API_URL = import.meta.env.VITE_URL;
 
 export default function ConfiguracionPanel({ proyecto, setProyecto }) {
   const [isSaving, setIsSaving] = useState(false)
@@ -33,7 +34,7 @@ export default function ConfiguracionPanel({ proyecto, setProyecto }) {
     const proyectoId = proyecto.id
 
     try {
-      const response = await fetch(`https://www.ttoca.online/api/usuarios/${correo}/proyectos/${proyectoId}`, {
+      const response = await fetch(`${API_URL}/api/usuarios/${correo}/proyectos/${proyectoId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)

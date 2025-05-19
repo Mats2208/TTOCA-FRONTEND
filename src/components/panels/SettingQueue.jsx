@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import {
   Clock,
@@ -14,6 +12,7 @@ import {
   Trash2,
   X,
 } from "lucide-react"
+const API_URL = import.meta.env.VITE_URL;
 
 export default function SettingsQueue({ proyecto }) {
   const [categorias, setCategorias] = useState([])
@@ -28,7 +27,7 @@ export default function SettingsQueue({ proyecto }) {
   const empresaId = proyecto.id
 
   useEffect(() => {
-    fetch(`https://www.ttoca.online/api/configuracion/${empresaId}`)
+    fetch(`${API_URL}/api/configuracion/${empresaId}`)
       .then((res) => res.json())
       .then((data) => setCategorias(data.categorias || []))
       .catch((err) => console.error("Error al cargar configuración:", err))
@@ -39,7 +38,7 @@ export default function SettingsQueue({ proyecto }) {
   }, [nombre])
 
   const guardarCategorias = (nuevas) => {
-    fetch(`https://www.ttoca.online/api/configuracion/${empresaId}`, {
+    fetch(`${API_URL}/api/configuracion/${empresaId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ categorias: nuevas }),
@@ -72,7 +71,7 @@ export default function SettingsQueue({ proyecto }) {
     guardarCategorias(actualizadas)
 
     // 🔥 Solicita eliminar también en el backend
-    fetch(`https://www.ttoca.online/api/proyectos/${empresaId}/cola/${id}`, {
+    fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${id}`, {
       method: "DELETE",
     })
       .then((res) => {
