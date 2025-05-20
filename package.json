@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "lucide-react": "^0.507.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-qr-code": "^2.0.15",
     "react-router": "^7.5.3",
     "react-router-dom": "^7.5.3",
     "swiper": "^11.2.6"

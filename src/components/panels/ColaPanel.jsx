@@ -22,12 +22,13 @@ export default function ColaPanel({ proyecto }) {
   const [colas, setColas] = useState([]) // lista de colas (categorías)
   const [colaSeleccionada, setColaSeleccionada] = useState(null)
   const [clientes, setClientes] = useState([])
-  const colaActiva = clientes.length > 0
+  const [colaActiva, setColaActiva] = useState(false)
   const [nombreCliente, setNombreCliente] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mostrarModal, setMostrarModal] = useState(false)
   const [cargando, setCargando] = useState(false)
   const modalRef = useRef(null)
+  
 
   // Efecto para cerrar el modal al hacer clic fuera o presionar ESC
   useEffect(() => {
@@ -79,11 +80,12 @@ export default function ColaPanel({ proyecto }) {
         .then((res) => res.json())
         .then((data) => {
           setClientes(data.turnos || [])
+          setColaActiva((data.turnos || []).length > 0) // activa si hay turnos
         })
         .catch((err) => console.error("Error al cargar turnos:", err))
         .finally(() => setCargando(false))
     }
-  }, [colaSeleccionada, colaActiva])
+  }, [colaSeleccionada])
 
   useEffect(() => {
   if (!colaSeleccionada || !colaActiva) return
@@ -101,16 +103,23 @@ export default function ColaPanel({ proyecto }) {
   const toggleCola = () => {
     if (!colaSeleccionada) return
 
-    if (clientes.length > 0) {
-      setClientes([])
+    if (colaActiva) {
+      // Pausar cola
+      setColaActiva(false)
     } else {
+      // Activar cola: hacer fetch y marcar activa
       setCargando(true)
       fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
         .then((res) => res.json())
-        .then((data) => setClientes(data.turnos || []))
+        .then((data) => {
+          setClientes(data.turnos || [])
+          setColaActiva(true)
+        })
+        .catch((err) => console.error("Error al activar cola:", err))
         .finally(() => setCargando(false))
     }
   }
+
   const agregarCliente = () => {
     if (!nombreCliente.trim() || !colaSeleccionada) return
     setCargando(true)
@@ -212,8 +221,7 @@ export default function ColaPanel({ proyecto }) {
                   fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${cola.id}`)
                     .then((res) => res.json())
                     .then((data) => {
-                      setClientes(data.turnos || [])
-                      setColaActiva((data.turnos || []).length > 0) // activa si hay personas
+                      setClientes(data.turnos || []) // ✅ Esto es suficiente
                     })
                     .catch((err) => console.error("Error al cargar turnos:", err))
                     .finally(() => setCargando(false))
