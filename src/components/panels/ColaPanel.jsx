@@ -161,7 +161,7 @@ export default function ColaPanel({ proyecto }) {
 
   // Función para abrir una vista específica en una nueva ventana
   const abrirVista = (ruta) => {
-    window.open(`http://localhost:5173${ruta}`, "_blank", "width=800,height=600")
+    window.open(`${API_URL}${ruta}`, "_blank", "width=800,height=600")
     setMostrarModal(false)
   }
 
