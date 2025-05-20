@@ -1,72 +1,119 @@
-const API_URL = import.meta.env.VITE_URL;
-import { useState, useEffect } from "react"
-import { Play, Pause, Users, Clock, RefreshCw, ChevronRight, Plus, User } from "lucide-react"
+"use client"
+
+const API_URL = import.meta.env.VITE_URL
+import { useState, useEffect, useRef } from "react"
+import {
+  Play,
+  Pause,
+  Users,
+  Clock,
+  RefreshCw,
+  ChevronRight,
+  Plus,
+  User,
+  X,
+  Monitor,
+  Clipboard,
+  Settings,
+} from "lucide-react"
 
 export default function ColaPanel({ proyecto }) {
   const empresaId = proyecto.id
   const [colas, setColas] = useState([]) // lista de colas (categorías)
   const [colaSeleccionada, setColaSeleccionada] = useState(null)
   const [clientes, setClientes] = useState([])
+  const colaActiva = clientes.length > 0
   const [nombreCliente, setNombreCliente] = useState("")
-  const [colaActiva, setColaActiva] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mostrarModal, setMostrarModal] = useState(false)
+  const [cargando, setCargando] = useState(false)
+  const modalRef = useRef(null)
 
+  // Efecto para cerrar el modal al hacer clic fuera o presionar ESC
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setMostrarModal(false)
+      }
+    }
 
-  const abrirVentanasPopUp = () => {
-    if (!colaSeleccionada) return
+    const handleEscKey = (event) => {
+      if (event.key === "Escape") {
+        setMostrarModal(false)
+      }
+    }
 
-    const base = `http://localhost:5173`
-    const urls = [
-      `${base}/monitor/${empresaId}/${colaSeleccionada.id}`,
-      `${base}/registro/${empresaId}/${colaSeleccionada.id}`,
-      `${base}/admin/${empresaId}/${colaSeleccionada.id}`
-    ]
+    if (mostrarModal) {
+      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("keydown", handleEscKey)
+      // Prevenir scroll en el body cuando el modal está abierto
+      document.body.style.overflow = "hidden"
+    }
 
-    urls.forEach(url => {
-      window.open(url, "_blank", "width=800,height=600")
-    })
-  }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleEscKey)
+      document.body.style.overflow = "auto"
+    }
+  }, [mostrarModal])
 
   useEffect(() => {
+    setCargando(true)
     fetch(`${API_URL}/api/configuracion/${empresaId}`)
       .then((res) => res.json())
       .then((data) => {
         const categorias = data.categorias || []
         setColas(categorias)
         if (categorias.length > 0) {
-          setColaSeleccionada(categorias[0]) // por defecto
+          setColaSeleccionada(categorias[0])
         }
       })
       .catch((err) => console.error("Error al cargar configuración:", err))
+      .finally(() => setCargando(false))
   }, [empresaId])
 
-  // Cargar turnos de la cola seleccionada
   useEffect(() => {
-    if (colaSeleccionada && colaActiva) {
+    if (colaSeleccionada) {
+      setCargando(true)
       fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
         .then((res) => res.json())
         .then((data) => {
           setClientes(data.turnos || [])
         })
         .catch((err) => console.error("Error al cargar turnos:", err))
+        .finally(() => setCargando(false))
     }
   }, [colaSeleccionada, colaActiva])
 
+  useEffect(() => {
+  if (!colaSeleccionada || !colaActiva) return
+
+  const interval = setInterval(() => {
+    fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
+      .then((res) => res.json())
+      .then((data) => setClientes(data.turnos || []))
+      .catch((err) => console.error("Auto-refresh error", err))
+  }, 5000)
+
+  return () => clearInterval(interval)
+}, [colaSeleccionada, colaActiva])
+
   const toggleCola = () => {
-    const nuevoEstado = !colaActiva
-    setColaActiva(nuevoEstado)
     if (!colaSeleccionada) return
-    if (nuevoEstado) {
+
+    if (clientes.length > 0) {
+      setClientes([])
+    } else {
+      setCargando(true)
       fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
         .then((res) => res.json())
         .then((data) => setClientes(data.turnos || []))
-    } else {
-      setClientes([])
+        .finally(() => setCargando(false))
     }
   }
-
   const agregarCliente = () => {
     if (!nombreCliente.trim() || !colaSeleccionada) return
+    setCargando(true)
     fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -82,10 +129,12 @@ export default function ColaPanel({ proyecto }) {
       })
       .then((res) => res.json())
       .then((data) => setClientes(data.turnos || []))
+      .finally(() => setCargando(false))
   }
 
   const llamarSiguiente = () => {
     if (!colaSeleccionada) return
+    setCargando(true)
     fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}/siguiente`, {
       method: "POST",
     })
@@ -94,11 +143,42 @@ export default function ColaPanel({ proyecto }) {
       })
       .then((res) => res.json())
       .then((data) => setClientes(data.turnos || []))
+      .finally(() => setCargando(false))
   }
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
   }
+
+  // Función para abrir una vista específica en una nueva ventana
+  const abrirVista = (ruta) => {
+    window.open(`http://localhost:5173${ruta}`, "_blank", "width=800,height=600")
+    setMostrarModal(false)
+  }
+
+  const vistas = [
+    {
+      titulo: "Pantalla Pública (Monitor)",
+      ruta: `/monitor/${empresaId}/${colaSeleccionada?.id}`,
+      color: "bg-violet-600 hover:bg-violet-700",
+      icono: <Monitor className="w-5 h-5" />,
+      descripcion: "Muestra los turnos actuales y llamados",
+    },
+    {
+      titulo: "Pantalla de Registro",
+      ruta: `/entrada/${empresaId}/${colaSeleccionada?.id}`,
+      color: "bg-blue-600 hover:bg-blue-700",
+      icono: <Clipboard className="w-5 h-5" />,
+      descripcion: "Permite a los clientes registrarse",
+    },
+    {
+      titulo: "Panel de Administración",
+      ruta: `/admin/${empresaId}/${colaSeleccionada?.id}`,
+      color: "bg-emerald-600 hover:bg-emerald-700",
+      icono: <Settings className="w-5 h-5" />,
+      descripcion: "Control avanzado de la cola",
+    },
+  ]
 
   return (
     <div className="flex flex-col md:flex-row bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200">
@@ -125,12 +205,23 @@ export default function ColaPanel({ proyecto }) {
           {colas.map((cola) => (
             <li
               key={cola.id}
-              onClick={() => {
-                setColaSeleccionada(cola)
-                if (window.innerWidth < 768) {
-                  setSidebarOpen(false)
-                }
-              }}
+                onClick={() => {
+                  setColaSeleccionada(cola)
+                  setCargando(true)
+
+                  fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${cola.id}`)
+                    .then((res) => res.json())
+                    .then((data) => {
+                      setClientes(data.turnos || [])
+                      setColaActiva((data.turnos || []).length > 0) // activa si hay personas
+                    })
+                    .catch((err) => console.error("Error al cargar turnos:", err))
+                    .finally(() => setCargando(false))
+
+                  if (window.innerWidth < 768) {
+                    setSidebarOpen(false)
+                  }
+                }}
               className={`
                 cursor-pointer px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center
                 ${
@@ -213,13 +304,22 @@ export default function ColaPanel({ proyecto }) {
                       onChange={(e) => setNombreCliente(e.target.value)}
                       placeholder="Nombre del cliente"
                       className="pl-10 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all"
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          agregarCliente()
+                        }
+                      }}
                     />
                   </div>
                   <button
                     onClick={agregarCliente}
-                    className="bg-violet-600 text-white px-5 py-3 rounded-lg hover:bg-violet-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                    disabled={cargando || !nombreCliente.trim()}
+                    className={`
+                      bg-violet-600 text-white px-5 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium
+                      ${cargando || !nombreCliente.trim() ? "opacity-70 cursor-not-allowed" : "hover:bg-violet-700"}
+                    `}
                   >
-                    <Plus size={18} />
+                    {cargando ? <RefreshCw size={18} className="animate-spin" /> : <Plus size={18} />}
                     Agregar
                   </button>
                 </div>
@@ -229,6 +329,7 @@ export default function ColaPanel({ proyecto }) {
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <button
                 onClick={toggleCola}
+                disabled={cargando}
                 className={`
                   flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg text-sm font-medium transition-all
                   ${
@@ -236,9 +337,12 @@ export default function ColaPanel({ proyecto }) {
                       ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
                       : "bg-violet-600 text-white hover:bg-violet-700 shadow-sm"
                   }
+                  ${cargando ? "opacity-70 cursor-not-allowed" : ""}
                 `}
               >
-                {colaActiva ? (
+                {cargando ? (
+                  <RefreshCw size={18} className="animate-spin" />
+                ) : colaActiva ? (
                   <>
                     <Pause size={18} />
                     Pausar Cola
@@ -254,28 +358,29 @@ export default function ColaPanel({ proyecto }) {
               {colaActiva && (
                 <button
                   onClick={llamarSiguiente}
-                  disabled={clientes.length === 0}
+                  disabled={clientes.length === 0 || cargando}
                   className={`
                     flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg text-sm font-medium transition-all
                     ${
-                      clientes.length === 0
+                      clientes.length === 0 || cargando
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-green-600 text-white hover:bg-green-700 shadow-sm"
                     }
                   `}
                 >
-                  <RefreshCw size={18} />
+                  {cargando ? <RefreshCw size={18} className="animate-spin" /> : <RefreshCw size={18} />}
                   Llamar siguiente
                 </button>
               )}
-                {colaActiva && (
+              {colaActiva && (
                 <button
-                  onClick={abrirVentanasPopUp}
-                  className="bg-green-600 text-white hover:bg-green-700 shadow-sm flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg text-sm font-medium transition-all"
+                  onClick={() => setMostrarModal(true)}
+                  className="bg-blue-600 text-white hover:bg-blue-700 shadow-sm flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg text-sm font-medium transition-all"
                 >
-                  Abrir ventanas pop-up
+                  <Monitor size={18} />
+                  Abrir pantalla
                 </button>
-                )}
+              )}
             </div>
 
             {/* Lista */}
@@ -285,7 +390,7 @@ export default function ColaPanel({ proyecto }) {
                   <h3 className="text-lg font-semibold text-gray-800">Clientes en espera</h3>
                 </div>
                 {clientes.length > 0 ? (
-                  <ul className="divide-y divide-gray-200">
+                  <ul className="divide-y divide-gray-200 max-h-[400px] overflow-y-auto">
                     {clientes.map((cliente, index) => (
                       <li key={cliente.id} className="p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex items-center justify-between">
@@ -326,6 +431,57 @@ export default function ColaPanel({ proyecto }) {
           </div>
         )}
       </div>
+
+      {/* Modal mejorado para abrir ventanas emergentes */}
+      {mostrarModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div
+            ref={modalRef}
+            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 pt-6 pb-2 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800">¿Qué vista deseas abrir?</h2>
+              <button
+                onClick={() => setMostrarModal(false)}
+                className="h-8 w-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-4 w-4" />
+                <span className="sr-only">Cerrar</span>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 pt-2 space-y-4">
+              <div className="grid gap-3">
+                {vistas.map((vista, index) => (
+                  <button
+                    key={index}
+                    onClick={() => abrirVista(vista.ruta)}
+                    className={`w-full py-4 text-white rounded-lg transition-all flex items-center gap-3 ${vista.color}`}
+                  >
+                    <div className="bg-white bg-opacity-20 p-2 rounded-lg ml-3">{vista.icono}</div>
+                    <div className="text-left">
+                      <div className="font-medium">{vista.titulo}</div>
+                      <div className="text-xs text-white text-opacity-80 mt-1">{vista.descripcion}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="pt-2 text-center">
+                <button
+                  onClick={() => setMostrarModal(false)}
+                  className="text-gray-500 hover:text-gray-800 text-sm px-4 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

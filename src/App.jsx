@@ -9,6 +9,9 @@ import Profile from "./pages/Profile";
 import Pricing from "./pages/Pricing";
 import Service from "./pages/Service";
 import CrearProyecto from "./pages/CrearProyecto";
+import MonitorView from "./pages/MonitorView";
+import EntradaView from "./pages/EntradaView";
+import AdminView from "./pages/AdminView";
 
 function App() {
   return (
@@ -24,6 +27,9 @@ function App() {
         <Route path="/Servicios" element={<Service />} />
         <Route path="*" element={<NotFoundpage />} />
         <Route path="/CrearProyecto" element={<CrearProyecto />} />
+        <Route path="/monitor/:empresaId/:colaId" element={<MonitorView />} />
+        <Route path="/entrada/:empresaId/:colaId" element={<EntradaView />} />
+        <Route path="/admin/:empresaId/:colaId" element={<AdminView />} />
       </Routes>
     </BrowserRouter>
   );
