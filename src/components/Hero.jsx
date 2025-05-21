@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Clock, Users, BarChart } from "lucide-react"
+import { Link } from "react-router-dom"
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false)
@@ -74,6 +75,8 @@ const Hero = () => {
               <div className="text-left">
                 <p className="text-sm font-medium text-gray-800">En espera</p>
                 <p className="text-xs text-gray-500">17 personas antes que tú</p>
+                <Link to="/verificar-turno" className="text-blue-600 hover:underline">Verificar mi turno</Link>
+
               </div>
             </div>
           </div>

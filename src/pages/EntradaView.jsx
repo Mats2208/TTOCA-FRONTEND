@@ -42,9 +42,10 @@ export default function EntradaView() {
       }),
     })
       .then((res) => res.json())
-      .then(() => {
+      .then((data) => {
+        const turno = data.turno;
         setMensaje(
-          `¡Turno generado para ${nombre} en "${colaSeleccionada.nombre}"!`
+          `¡Turno generado para ${turno.nombre} (#${turno.numero})!\nCódigo de seguimiento:\n${turno.codigo}`
         );
         setNombre("");
       })
@@ -54,7 +55,7 @@ export default function EntradaView() {
       });
   };
 
-  const currentURL = window.location.href;
+  const currentURL = `${window.location.origin}/mi-turno/${empresaId}`;
 
   return (    <div className="min-h-screen bg-gradient-to-b from-cyan-50 to-sky-50 relative overflow-hidden">
       {/* Decorative Elements */}

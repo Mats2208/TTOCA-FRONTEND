@@ -132,7 +132,7 @@ export default function ColaPanel({ proyecto }) {
       }),
     })
       .then((res) => res.json())
-      .then(() => {
+      .then((data) => {
         setNombreCliente("")
         return fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
       })
@@ -159,11 +159,13 @@ export default function ColaPanel({ proyecto }) {
     setSidebarOpen(!sidebarOpen)
   }
 
-  // Función para abrir una vista específica en una nueva ventana
   const abrirVista = (ruta) => {
-    window.open(`${API_URL}${ruta}`, "_blank", "width=800,height=600")
-    setMostrarModal(false)
-  }
+    // Si API_URL está definido, úsalo como base, si no, usa window.location.origin (útil para pruebas locales)
+    const baseUrl = (API_URL && API_URL !== "") ? API_URL.replace(/\/$/, "") : window.location.origin;
+    const url = `${baseUrl}${ruta}`;
+    window.open(url, "_blank", "width=800,height=600");
+    setMostrarModal(false);
+  };
 
   const vistas = [
     {
@@ -406,7 +408,10 @@ export default function ColaPanel({ proyecto }) {
                             <div className="bg-violet-100 text-violet-700 p-2 rounded-full">
                               <User size={16} />
                             </div>
-                            <span className="font-medium text-gray-800">{cliente.nombre}</span>
+                            <div className="flex flex-col">
+                              <span className="font-medium text-gray-800">{cliente.nombre}</span>
+                              <span className="text-xs text-gray-500 font-mono">#{cliente.codigo}</span>
+                            </div>
                           </div>
                           <div className="flex items-center">
                             <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">

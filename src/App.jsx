@@ -12,6 +12,8 @@ import CrearProyecto from "./pages/CrearProyecto";
 import MonitorView from "./pages/MonitorView";
 import EntradaView from "./pages/EntradaView";
 import AdminView from "./pages/AdminView";
+import VerificarTurnoView from "./pages/VerificarTurnoView";
+import MiTurnoView from "./pages/MiTurnoView";
 
 function App() {
   return (
@@ -30,6 +32,10 @@ function App() {
         <Route path="/monitor/:empresaId/:colaId" element={<MonitorView />} />
         <Route path="/entrada/:empresaId/:colaId" element={<EntradaView />} />
         <Route path="/admin/:empresaId/:colaId" element={<AdminView />} />
+        <Route path="/verificar-turno" element={<VerificarTurnoView />} />
+        <Route path="/mi-turno/:empresaId" element={<MiTurnoView />} />
+
+
       </Routes>
     </BrowserRouter>
   );
