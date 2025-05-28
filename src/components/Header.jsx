@@ -11,7 +11,7 @@ const Header = () => {
     { name: "Inicio", href: "/" },
     { name: "Servicios", href: "/servicios" },
     { name: "Precios", href: "/pricing" },
-    { name: "Profile", href: "/Profile" },
+    { name: "Acerca de Nosotros", href: "/About" },
   ]
 
   // Detectar scroll para cambiar el estilo del header

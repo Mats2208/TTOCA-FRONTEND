@@ -47,12 +47,12 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/precios" className="hover:text-white transition block py-1">
+                <a href="/pricing" className="hover:text-white transition block py-1">
                   Precios
                 </a>
               </li>
               <li>
-                <a href="/contacto" className="hover:text-white transition block py-1">
+                <a href="/servicios" className="hover:text-white transition block py-1">
                   Contacto
                 </a>
               </li>
@@ -81,16 +81,16 @@ const Footer = () => {
               <li className="py-1">
                 Email:{" "}
                 <a href="mailto:soporte@ttoca.com" className="hover:text-white transition">
-                  soporte@ttoca.com
+                  ttocaproyect@gmail.com
                 </a>
               </li>
               <li>
-                <a href="/ayuda" className="hover:text-white transition block py-1">
+                <a href="/servicios" className="hover:text-white transition block py-1">
                   Centro de ayuda
                 </a>
               </li>
               <li>
-                <a href="/faqs" className="hover:text-white transition block py-1">
+                <a href="/servicios" className="hover:text-white transition block py-1">
                   Preguntas frecuentes
                 </a>
               </li>
@@ -146,7 +146,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
-          © {new Date().getFullYear()} Ttoca. Todos los derechos reservados.
+          TECNOUPSA - {new Date().getFullYear()}. Todos los derechos reservados.
         </div>
       </div>
     </footer>

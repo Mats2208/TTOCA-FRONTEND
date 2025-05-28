@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { Mail, Lock, Eye, EyeOff, CheckCircle } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { Mail, Lock, Eye, EyeOff, CheckCircle, ArrowLeft, Home } from "lucide-react"
+import { useNavigate, Link } from "react-router-dom"
 const API_URL = import.meta.env.VITE_URL;
 
 const Login = () => {
@@ -64,6 +64,17 @@ const handleSubmit = async (e) => {
 
   return (
     <section className="py-16 px-4 md:py-24 bg-gradient-to-b from-blue-50 to-white min-h-screen flex items-center">
+            {/* Home Button */}
+      <div className="fixed top-6 left-6 z-50">
+        <Link
+          to="/"
+          className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-xl shadow-lg border border-gray-200 flex items-center gap-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <Home className="w-4 h-4" />
+          <span className="font-medium">Inicio</span>
+        </Link>
+      </div>
       <div className="max-w-md mx-auto w-full">
         {success ? (
           <div className="bg-white rounded-3xl shadow-xl p-8 text-center">

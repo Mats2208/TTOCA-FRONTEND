@@ -2,16 +2,22 @@
 
 import { useState, useEffect } from "react"
 import { Building2, LayoutDashboard, BarChart3, Settings, Settings2, Menu, X, LogOut } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export default function Sidebar({ proyecto, setVista, vistaActiva }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const navigate = useNavigate()
 
     const handleLogout = () => {
     // Limpiar sesión actual y datos de empresas
     localStorage.removeItem("ttoca_session")
     window.location.href = "/login"
     }
+
+  const handleDocumentationClick = () => {
+    navigate("/documentacion")
+  }
 
   useEffect(() => {
     const checkIfMobile = () => {
@@ -123,12 +129,14 @@ export default function Sidebar({ proyecto, setVista, vistaActiva }) {
               <span>Cerrar sesión</span>
             </button>
           </div>
-          
-          <div className="p-4 border-t border-gray-100">
+            <div className="p-4 border-t border-gray-100">
             <div className="bg-blue-50 rounded-lg p-4 shadow-sm">
               <h3 className="text-sm font-medium text-blue-700 mb-1">¿Necesitas ayuda?</h3>
               <p className="text-xs text-blue-600/80 mb-3">Consulta nuestra guía de uso o contacta con soporte.</p>
-              <button className="flex items-center justify-center w-full bg-white hover:bg-blue-600 border border-blue-200 hover:border-blue-600 text-blue-600 hover:text-white py-1.5 px-3 rounded-md text-xs font-medium transition-all duration-300">
+              <button 
+                onClick={handleDocumentationClick}
+                className="flex items-center justify-center w-full bg-white hover:bg-blue-600 border border-blue-200 hover:border-blue-600 text-blue-600 hover:text-white py-1.5 px-3 rounded-md text-xs font-medium transition-all duration-300"
+              >
                 Ver documentación
               </button>
             </div>

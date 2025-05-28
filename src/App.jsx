@@ -5,7 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import NotFoundpage from "./pages/404";
 import Registro from "./pages/Registro";
 import Login from "./pages/Login";
-import Profile from "./pages/Profile";  
+import AboutUS from "./pages/AboutUS";  
 import Pricing from "./pages/Pricing";
 import Service from "./pages/Service";
 import CrearProyecto from "./pages/CrearProyecto";
@@ -14,6 +14,7 @@ import EntradaView from "./pages/EntradaView";
 import AdminView from "./pages/AdminView";
 import VerificarTurnoView from "./pages/VerificarTurnoView";
 import MiTurnoView from "./pages/MiTurnoView";
+import Documentacion from "./pages/Documentacion";
 
 function App() {
   return (
@@ -24,7 +25,7 @@ function App() {
         <Route path="/Dashboard/:id" element={<Dashboard />} />
         <Route path="/Registro" element={<Registro />} />
         <Route path="/Login" element={<Login />} />
-        <Route path="/Profile" element={<Profile />} />
+        <Route path="/About" element={<AboutUS />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/Servicios" element={<Service />} />
         <Route path="*" element={<NotFoundpage />} />
@@ -34,8 +35,7 @@ function App() {
         <Route path="/admin/:empresaId/:colaId" element={<AdminView />} />
         <Route path="/verificar-turno" element={<VerificarTurnoView />} />
         <Route path="/mi-turno/:empresaId" element={<MiTurnoView />} />
-
-
+        <Route path="documentacion" element={<Documentacion/>} />
       </Routes>
     </BrowserRouter>
   );
