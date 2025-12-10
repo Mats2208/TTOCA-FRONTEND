@@ -67,7 +67,7 @@ const Header = () => {
             <a
               key={link.name}
               href={link.href}
-              className="text-gray-600 font-medium hover:text-blue-600 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full"
+              className="text-gray-600 font-semibold hover:text-primary-600 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-gradient-to-r after:from-primary-600 after:to-secondary-600 after:transition-all after:duration-300 hover:after:w-full"
             >
               {link.name}
             </a>
@@ -78,7 +78,7 @@ const Header = () => {
         <div className="hidden md:block">
           <a
             href="/login"
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-md hover:from-blue-700 hover:to-blue-800 transition-all duration-300 ease-in-out"
+            className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white px-6 py-2.5 rounded-full font-bold hover:shadow-card shadow-soft transition-all duration-300 ease-in-out hover:scale-105 active:scale-95"
           >
             Iniciar sesión
           </a>
@@ -107,7 +107,7 @@ const Header = () => {
             <a
               key={link.name}
               href={link.href}
-              className="block text-gray-700 hover:text-blue-600 font-medium py-2 border-b border-gray-100 last:border-0 transition-colors"
+              className="block text-gray-700 hover:text-primary-600 font-semibold py-2 border-b border-gray-100 last:border-0 transition-colors"
               onClick={() => setMenuOpen(false)}
             >
               {link.name}
@@ -115,7 +115,7 @@ const Header = () => {
           ))}
           <a
             href="/login"
-            className="block text-center bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-medium"
+            className="block text-center bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-3 rounded-xl hover:shadow-card shadow-soft transition-all duration-300 font-bold"
             onClick={() => setMenuOpen(false)}
           >
             Iniciar sesión

@@ -16,6 +16,7 @@ import {
   Clipboard,
   Settings,
 } from "lucide-react"
+import { useQueueWebSocket } from "../../hooks/useWebSocket"
 
 export default function ColaPanel({ proyecto }) {
   const empresaId = proyecto.id
@@ -73,6 +74,7 @@ export default function ColaPanel({ proyecto }) {
       .finally(() => setCargando(false))
   }, [empresaId])
 
+  // Cargar turnos iniciales al seleccionar una cola
   useEffect(() => {
     if (colaSeleccionada) {
       setCargando(true)
@@ -87,18 +89,19 @@ export default function ColaPanel({ proyecto }) {
     }
   }, [colaSeleccionada])
 
-  useEffect(() => {
-  if (!colaSeleccionada || !colaActiva) return
-
-  const interval = setInterval(() => {
-    fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
-      .then((res) => res.json())
-      .then((data) => setClientes(data.turnos || []))
-      .catch((err) => console.error("Auto-refresh error", err))
-  }, 5000)
-
-  return () => clearInterval(interval)
-}, [colaSeleccionada, colaActiva])
+  // WebSocket para actualizaciones en tiempo real
+  // IMPORTANTE: enabled debe estar siempre activo cuando hay cola seleccionada
+  // No depender de colaActiva para recibir actualizaciones
+  useQueueWebSocket({
+    empresaId,
+    colaId: colaSeleccionada?.id,
+    onQueueUpdate: (turnos) => {
+      setClientes(turnos)
+      // Actualizar colaActiva basado en si hay turnos (corregido el bug)
+      setColaActiva(turnos.length > 0)
+    },
+    enabled: !!colaSeleccionada, // Siempre escuchar cuando hay cola seleccionada
+  })
 
   const toggleCola = () => {
     if (!colaSeleccionada) return
@@ -134,10 +137,29 @@ export default function ColaPanel({ proyecto }) {
       .then((res) => res.json())
       .then((data) => {
         setNombreCliente("")
-        return fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
+        setColaActiva(true)
+
+        // Actualización optimista: agregar el turno de inmediato
+        if (data.turno) {
+          setClientes(prev => [...prev, data.turno])
+        }
+
+        // Fallback: Si WebSocket no actualiza en 2 segundos, hacer fetch manual
+        const fallbackTimer = setTimeout(() => {
+          fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
+            .then(res => res.json())
+            .then(result => {
+              if (result.turnos) {
+                setClientes(result.turnos)
+              }
+            })
+            .catch(err => console.error("Error en fallback:", err))
+        }, 2000)
+
+        // Limpiar timer si el componente se desmonta
+        return () => clearTimeout(fallbackTimer)
       })
-      .then((res) => res.json())
-      .then((data) => setClientes(data.turnos || []))
+      .catch((err) => console.error("Error al agregar cliente:", err))
       .finally(() => setCargando(false))
   }
 
@@ -147,11 +169,16 @@ export default function ColaPanel({ proyecto }) {
     fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}/siguiente`, {
       method: "POST",
     })
-      .then(() => {
-        return fetch(`${API_URL}/api/proyectos/${empresaId}/cola/${colaSeleccionada.id}`)
-      })
       .then((res) => res.json())
-      .then((data) => setClientes(data.turnos || []))
+      .then((data) => {
+        // Si no hay más turnos, el backend devuelve un mensaje
+        if (data.mensaje === "No hay turnos") {
+          setColaActiva(false)
+          setClientes([])
+        }
+        // WebSocket actualizará automáticamente la lista en otros casos
+      })
+      .catch((err) => console.error("Error al llamar siguiente:", err))
       .finally(() => setCargando(false))
   }
 
@@ -160,9 +187,10 @@ export default function ColaPanel({ proyecto }) {
   }
 
   const abrirVista = (ruta) => {
-    // Si API_URL está definido, úsalo como base, si no, usa window.location.origin (útil para pruebas locales)
-    const baseUrl = (API_URL && API_URL !== "") ? API_URL.replace(/\/$/, "") : window.location.origin;
-    const url = `${baseUrl}${ruta}`;
+    // Usar la URL del frontend (Vite dev server o producción)
+    // No usar API_URL aquí porque las rutas son del frontend, no del backend
+    const frontendUrl = window.location.origin;
+    const url = `${frontendUrl}${ruta}`;
     window.open(url, "_blank", "width=800,height=600");
     setMostrarModal(false);
   };
@@ -192,12 +220,12 @@ export default function ColaPanel({ proyecto }) {
   ]
 
   return (
-    <div className="flex flex-col md:flex-row bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-200">
+    <div className="flex flex-col md:flex-row bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-card overflow-hidden border border-gray-200">
       {/* Mobile sidebar toggle */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200">
         <h2 className="text-lg font-bold text-gray-800">{colaSeleccionada ? colaSeleccionada.nombre : "Colas"}</h2>
-        <button onClick={toggleSidebar} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-          <ChevronRight className={`w-5 h-5 text-gray-600 transition-transform ${sidebarOpen ? "rotate-90" : ""}`} />
+        <button onClick={toggleSidebar} className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-200">
+          <ChevronRight className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${sidebarOpen ? "rotate-90" : ""}`} />
         </button>
       </div>
 
@@ -233,11 +261,11 @@ export default function ColaPanel({ proyecto }) {
                   }
                 }}
               className={`
-                cursor-pointer px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center
+                cursor-pointer px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 flex items-center
                 ${
                   colaSeleccionada?.id === cola.id
-                    ? "bg-violet-100 text-violet-700 border-l-4 border-violet-600"
-                    : "text-gray-700 hover:bg-gray-100 border-l-4 border-transparent"
+                    ? "bg-primary-100 text-primary-700 border-l-4 border-primary-600 shadow-soft"
+                    : "text-gray-700 hover:bg-gray-100 border-l-4 border-transparent hover:border-gray-300"
                 }
               `}
             >
@@ -252,9 +280,9 @@ export default function ColaPanel({ proyecto }) {
       <div className={`flex-1 bg-white p-5 ${!sidebarOpen ? "block" : "hidden md:block"}`}>
         {colaSeleccionada ? (
           <div className="max-w-3xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 animate-fade-in">
               <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                <span className="bg-violet-100 text-violet-700 p-2 rounded-lg mr-3">
+                <span className="bg-gradient-to-br from-primary-500 to-primary-600 text-white p-2.5 rounded-xl mr-3 shadow-soft">
                   <Users size={20} />
                 </span>
                 {colaSeleccionada.nombre}
@@ -262,36 +290,37 @@ export default function ColaPanel({ proyecto }) {
               <div className="flex items-center">
                 <span
                   className={`
-                  px-3 py-1 rounded-full text-xs font-medium
-                  ${colaActiva ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}
+                  px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all duration-300
+                  ${colaActiva ? "bg-success-100 text-success-700 ring-2 ring-success-200" : "bg-gray-100 text-gray-600"}
                 `}
                 >
+                  <span className={`w-1.5 h-1.5 rounded-full ${colaActiva ? "bg-success-500 animate-pulse-subtle" : "bg-gray-400"}`}></span>
                   {colaActiva ? "Activa" : "Inactiva"}
                 </span>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-card hover:shadow-elevated transition-all duration-300 animate-slide-up">
                 <div className="flex items-center gap-4">
-                  <div className="bg-violet-100 p-3 rounded-lg text-violet-700">
+                  <div className="bg-gradient-to-br from-primary-100 to-primary-200 p-3 rounded-xl text-primary-700">
                     <Users size={24} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 font-medium">Clientes en espera</p>
-                    <p className="text-2xl font-bold text-gray-800">{clientes.length}</p>
+                    <p className="text-sm text-gray-600 font-medium">Clientes en espera</p>
+                    <p className="text-3xl font-bold text-gray-800">{clientes.length}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-card hover:shadow-elevated transition-all duration-300 animate-slide-up" style={{animationDelay: '0.1s'}}>
                 <div className="flex items-center gap-4">
-                  <div className="bg-amber-100 p-3 rounded-lg text-amber-700">
+                  <div className="bg-gradient-to-br from-warning-100 to-warning-200 p-3 rounded-xl text-warning-700">
                     <Clock size={24} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 font-medium">Tiempo estimado</p>
-                    <p className="text-2xl font-bold text-gray-800">
+                    <p className="text-sm text-gray-600 font-medium">Tiempo estimado</p>
+                    <p className="text-3xl font-bold text-gray-800">
                       {clientes.length > 0 ? `${clientes.length * 5} min` : "0 min"}
                     </p>
                   </div>
@@ -299,55 +328,56 @@ export default function ColaPanel({ proyecto }) {
               </div>
             </div>
 
-            {/* Formulario */}
-            {colaActiva && (
-              <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Agregar cliente</h3>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      value={nombreCliente}
-                      onChange={(e) => setNombreCliente(e.target.value)}
-                      placeholder="Nombre del cliente"
-                      className="pl-10 w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all"
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          agregarCliente()
-                        }
-                      }}
-                    />
+            {/* Formulario - Siempre visible */}
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-gray-200 shadow-card mb-6 animate-slide-up" style={{animationDelay: '0.2s'}}>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <Plus className="w-5 h-5 text-primary-600" />
+                Agregar cliente
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
                   </div>
-                  <button
-                    onClick={agregarCliente}
-                    disabled={cargando || !nombreCliente.trim()}
-                    className={`
-                      bg-violet-600 text-white px-5 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium
-                      ${cargando || !nombreCliente.trim() ? "opacity-70 cursor-not-allowed" : "hover:bg-violet-700"}
-                    `}
-                  >
-                    {cargando ? <RefreshCw size={18} className="animate-spin" /> : <Plus size={18} />}
-                    Agregar
-                  </button>
+                  <input
+                    type="text"
+                    value={nombreCliente}
+                    onChange={(e) => setNombreCliente(e.target.value)}
+                    placeholder="Nombre del cliente"
+                    className="pl-10 w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all duration-200 bg-white"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        agregarCliente()
+                      }
+                    }}
+                  />
                 </div>
+                <button
+                  onClick={agregarCliente}
+                  disabled={cargando || !nombreCliente.trim()}
+                  className={`
+                    bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 font-semibold shadow-soft
+                    ${cargando || !nombreCliente.trim() ? "opacity-50 cursor-not-allowed" : "hover:shadow-card hover:scale-[1.02] active:scale-[0.98]"}
+                  `}
+                >
+                  {cargando ? <RefreshCw size={18} className="animate-spin" /> : <Plus size={18} />}
+                  Agregar
+                </button>
               </div>
-            )}
+            </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6 animate-slide-up" style={{animationDelay: '0.3s'}}>
               <button
                 onClick={toggleCola}
                 disabled={cargando}
                 className={`
-                  flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg text-sm font-medium transition-all
+                  flex-1 flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-sm font-semibold transition-all duration-200
                   ${
                     colaActiva
-                      ? "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
-                      : "bg-violet-600 text-white hover:bg-violet-700 shadow-sm"
+                      ? "bg-warning-50 text-warning-700 border-2 border-warning-200 hover:bg-warning-100 shadow-soft"
+                      : "bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:shadow-card shadow-soft"
                   }
-                  ${cargando ? "opacity-70 cursor-not-allowed" : ""}
+                  ${cargando ? "opacity-50 cursor-not-allowed" : "hover:scale-[1.02] active:scale-[0.98]"}
                 `}
               >
                 {cargando ? (
@@ -370,11 +400,11 @@ export default function ColaPanel({ proyecto }) {
                   onClick={llamarSiguiente}
                   disabled={clientes.length === 0 || cargando}
                   className={`
-                    flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg text-sm font-medium transition-all
+                    flex-1 flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-sm font-semibold transition-all duration-200 animate-fade-in
                     ${
                       clientes.length === 0 || cargando
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-green-600 text-white hover:bg-green-700 shadow-sm"
+                        : "bg-gradient-to-r from-success-600 to-success-700 text-white hover:shadow-card shadow-soft hover:scale-[1.02] active:scale-[0.98]"
                     }
                   `}
                 >
@@ -385,7 +415,7 @@ export default function ColaPanel({ proyecto }) {
               {colaActiva && (
                 <button
                   onClick={() => setMostrarModal(true)}
-                  className="bg-blue-600 text-white hover:bg-blue-700 shadow-sm flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-lg text-sm font-medium transition-all"
+                  className="bg-gradient-to-r from-secondary-600 to-secondary-700 text-white hover:shadow-card shadow-soft flex-1 flex items-center justify-center gap-2 py-3.5 px-5 rounded-xl text-sm font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] animate-fade-in"
                 >
                   <Monitor size={18} />
                   Abrir pantalla
@@ -395,26 +425,29 @@ export default function ColaPanel({ proyecto }) {
 
             {/* Lista */}
             {colaActiva && (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-gray-200 bg-gray-50">
-                  <h3 className="text-lg font-semibold text-gray-800">Clientes en espera</h3>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-card overflow-hidden animate-slide-up" style={{animationDelay: '0.4s'}}>
+                <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-primary-600" />
+                    Clientes en espera
+                  </h3>
                 </div>
                 {clientes.length > 0 ? (
-                  <ul className="divide-y divide-gray-200 max-h-[400px] overflow-y-auto">
+                  <ul className="divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
                     {clientes.map((cliente, index) => (
-                      <li key={cliente.id} className="p-4 hover:bg-gray-50 transition-colors">
+                      <li key={cliente.id} className="p-4 hover:bg-gradient-to-r hover:from-primary-50 hover:to-transparent transition-all duration-200 group">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="bg-violet-100 text-violet-700 p-2 rounded-full">
+                            <div className="bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700 p-2.5 rounded-xl group-hover:scale-110 transition-transform duration-200">
                               <User size={16} />
                             </div>
                             <div className="flex flex-col">
-                              <span className="font-medium text-gray-800">{cliente.nombre}</span>
+                              <span className="font-semibold text-gray-800 group-hover:text-primary-700 transition-colors">{cliente.nombre}</span>
                               <span className="text-xs text-gray-500 font-mono">#{cliente.codigo}</span>
                             </div>
                           </div>
                           <div className="flex items-center">
-                            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
+                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700 font-bold text-sm group-hover:from-primary-100 group-hover:to-primary-200 group-hover:text-primary-700 transition-all duration-200">
                               {index + 1}
                             </span>
                           </div>
@@ -423,9 +456,12 @@ export default function ColaPanel({ proyecto }) {
                     ))}
                   </ul>
                 ) : (
-                  <div className="p-8 text-center text-gray-500">
-                    <Users className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-                    <p>No hay clientes en la cola</p>
+                  <div className="p-12 text-center text-gray-500">
+                    <div className="bg-gradient-to-br from-gray-100 to-gray-200 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <p className="text-gray-600 font-medium">No hay clientes en la cola</p>
+                    <p className="text-sm text-gray-500 mt-1">Agrega el primer cliente para comenzar</p>
                   </div>
                 )}
               </div>
@@ -447,18 +483,18 @@ export default function ColaPanel({ proyecto }) {
 
       {/* Modal mejorado para abrir ventanas emergentes */}
       {mostrarModal && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
           <div
             ref={modalRef}
-            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200"
+            className="bg-white rounded-2xl shadow-elevated w-full max-w-md overflow-hidden animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-6 pt-6 pb-2 flex items-center justify-between">
+            <div className="px-6 pt-6 pb-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-primary-50 to-secondary-50">
               <h2 className="text-xl font-bold text-gray-800">¿Qué vista deseas abrir?</h2>
               <button
                 onClick={() => setMostrarModal(false)}
-                className="h-8 w-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-500 hover:bg-white hover:text-gray-700 transition-all duration-200 hover:scale-110"
               >
                 <X className="h-4 w-4" />
                 <span className="sr-only">Cerrar</span>
@@ -466,27 +502,27 @@ export default function ColaPanel({ proyecto }) {
             </div>
 
             {/* Content */}
-            <div className="p-6 pt-2 space-y-4">
+            <div className="p-6 space-y-3">
               <div className="grid gap-3">
                 {vistas.map((vista, index) => (
                   <button
                     key={index}
                     onClick={() => abrirVista(vista.ruta)}
-                    className={`w-full py-4 text-white rounded-lg transition-all flex items-center gap-3 ${vista.color}`}
+                    className={`w-full py-4 text-white rounded-xl transition-all duration-200 flex items-center gap-3 ${vista.color} hover:shadow-card hover:scale-[1.02] active:scale-[0.98]`}
                   >
-                    <div className="bg-white bg-opacity-20 p-2 rounded-lg ml-3">{vista.icono}</div>
+                    <div className="bg-white bg-opacity-20 backdrop-blur-sm p-2.5 rounded-xl ml-3 group-hover:bg-opacity-30 transition-all">{vista.icono}</div>
                     <div className="text-left">
-                      <div className="font-medium">{vista.titulo}</div>
-                      <div className="text-xs text-white text-opacity-80 mt-1">{vista.descripcion}</div>
+                      <div className="font-semibold">{vista.titulo}</div>
+                      <div className="text-xs text-white text-opacity-90 mt-0.5">{vista.descripcion}</div>
                     </div>
                   </button>
                 ))}
               </div>
 
-              <div className="pt-2 text-center">
+              <div className="pt-2 text-center border-t border-gray-200">
                 <button
                   onClick={() => setMostrarModal(false)}
-                  className="text-gray-500 hover:text-gray-800 text-sm px-4 py-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="text-gray-600 hover:text-gray-800 text-sm px-5 py-2.5 rounded-xl hover:bg-gray-100 transition-all duration-200 font-medium mt-2"
                 >
                   Cancelar
                 </button>
